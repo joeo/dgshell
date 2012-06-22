@@ -1,0 +1,6 @@
+.*.swp
+*~
+*.pyc
+
+# Feel free to put your own dg files here and git will ignore them
+*.dg

@@ -1,0 +1,67 @@
+#!/usr/bin/env python
+# vim: set ts=2 sw=2:
+
+import readline
+import sys
+import getpass
+
+import commands
+import database
+
+def load_history(db):
+  history = db.load_history()
+  for h in history:
+    readline.add_history(h)
+
+def save_history(db):
+  history = [readline.get_history_item(i)
+      for i in range(1,readline.get_current_history_length()+1)]
+  db.save_history(history)
+
+def run_interpreter(db):
+  try:
+    load_history(db)
+
+    print "This is dgshell. Be nice to your neighbors."
+    print "For a list of commands type help. To exit type Control+C."
+    print
+    print "   Username: %s" % db.username
+    print
+    while True:
+      s = raw_input("> ")
+      if len(s.strip()) == 0:
+        continue
+      try:
+        cmd = commands.parse_text(s)
+        cmd.run()
+      except commands.Error as ex:
+        print "Error: %s" % ex
+
+  except (EOFError, KeyboardInterrupt):
+    save_history(db)
+    print
+
+def main(argv):
+  if len(argv) < 2:
+    sys.stderr.write("usage: dgshell dgfile [COMMAND...]\n")
+    return
+  filename = argv[1]
+  
+  db = database.Db(filename)
+  if db.status == db.STATUS_NEW:
+    print "Initializing."
+    username = raw_input("username: ")
+    password = getpass.getpass("password: ")
+    db.init(username, password)
+
+  if len(argv) == 2:
+    run_interpreter(db)
+  else:
+    try:
+      cmd = commands.parse_list(argv[2:])
+      cmd.run()
+    except commands.Error as ex:
+      print "Error: %s" % ex
+
+if __name__ == "__main__":
+  main(sys.argv)

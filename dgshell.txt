@@ -1,0 +1,85 @@
+
+command:                statement ;
+statement:              fleet_assignemnt
+                        | move_statement
+                        | distribute_statement
+                        | planet_assignment
+                        | build_statement
+
+quoted_string:          "[^"]+"
+                        | '[^']+'
+var:                    [a-zA-Z_][a-zA-Z_0-9]*
+distance:               [0-9]*.?[0-9]*
+count:                  [0-9]*
+planet:                 quoted_string
+route:                  quoted_string
+
+## ------ How to specifly multiple destinations??? Multiple routes????
+destination:            | destination
+                        | planet_expression
+                        | PLANET planet
+                        | ROUTE route
+
+fleet_var:              var
+fleet_expression:       fleet_var
+                        | fleet_type WITHIN distance OF planet
+                        | fleet_type ON route
+                        | fleet_type INSIDE route
+                        | WITH <==> number fleet_type
+                        | ALL fleet_type
+fleet_type:             scout
+                        | arc
+                        | merchantman
+                        | bulkfreighter
+                        | fighter
+                        | frigate
+                        | cruiser
+                        | battleship
+                        | superbattleship
+                        | destroyer
+                        | blackbird
+                        | subspacer
+                        | scouts
+                        | arcs
+                        | merchantmen
+                        | bulkfreighters
+                        | fighters
+                        | frigates
+                        | cruisers
+                        | battleships
+                        | superbattleships
+                        | destroyers
+                        | blackbirds
+                        | subspacers
+fleet_assignment:       set fleet_var = fleet_expression
+move_statement:         MOVE fleet_expression TO destination
+
+planet_var:             var
+planet_expression:      | planet_var
+                        | planet
+                        | PLANETS ID NAME
+                        | PLANETS WITHIN distance OF planet
+                        | PLANETS INSIDE route
+                        | PLANETS WITH planet_spec
+                        | ALL PLANETS
+planet_spec:            society <==> number
+                        | CAN BUILD fleet_spec
+planet_assignment:      set planet_var = planet_expression
+fleet_spec:             | fleet_spec
+                        | count fleet_type
+fleet_build_spec:       MAX
+                        | fleet_spec
+build_statement:        BUILD fleet_build_spec ON planet_expression
+                        | BUILD fleet_build_spec ON planet_expression [AND SEND] TO destination
+
+
+-- Notes ----
+
+All keywords are case insensitive.
+
+The build expression assign the special "last" variable to the
+set of fleets that were just built.
+
+The build_statement with an AND SEND TO clause and the
+move_statement with multiple destinations distribute the fleets
+evenly (by attack power) to the specified destinations.
